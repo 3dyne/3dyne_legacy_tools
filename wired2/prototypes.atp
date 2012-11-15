@@ -1,0 +1,29 @@
+# archetype prototypes
+
+# typedef "type"		string
+# typedef "origin"	vec3d_t
+# typedef "value"		float
+# typedef "color"		vec3d_t
+# typedef "falloff"	float
+# typedef "angle"		float
+# typedef "spotvec"	vec3d_t
+
+class
+{
+	"type"		"light"
+	"origin"	"0 0 0"
+	"value"		"100"
+	"color"		"1 1 1"
+}
+
+class
+{
+	"type"		"spotlight"
+	"origin"	"0 0 0"
+	"value"		"100"
+	"color"		"1 1 1"
+
+	"falloff"	"50"
+	"angle"		"60"
+	"spotvec"	"0 -1 0"
+}

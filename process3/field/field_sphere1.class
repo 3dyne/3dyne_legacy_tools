@@ -1,0 +1,15 @@
+class "field" "field_sphere1"
+{
+	class "fieldpoints" "#1"
+	{
+		"vec3d"	"min"	"0 0 0"
+		"vec3d"	"max"	"3 3 3"
+	}
+
+	class "singularity" "#2"
+	{
+		"vec3d"		"origin"	"1.5 1.5 1.5"
+		"string"	"type"		"sink"
+		"float"		"value"		"1"
+	}
+}

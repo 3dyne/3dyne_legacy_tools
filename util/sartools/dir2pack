@@ -1,0 +1,2 @@
+#!/bin/bash
+ls -RLF | dirparse | o_pack $1 $2 $3 $4

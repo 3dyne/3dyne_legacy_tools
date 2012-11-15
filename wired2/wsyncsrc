@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "syncing wired sources ..."
+
+# get changes if they are newer than my files.
+# rsync -azuvb --exclude '*~' bottle-neck:/usr/local/gs/backup/wired5/ .
+
+# now put my newer files to server
+rsync -azuvb . bottle-neck:/usr/local/gs/backup/wired5/
+
+ 

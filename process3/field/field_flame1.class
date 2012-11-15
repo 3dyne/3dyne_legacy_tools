@@ -1,0 +1,57 @@
+class "field" "field_flame1"
+{
+	class "fieldpoints" "#1"
+	{
+		"vec3d"	"min"	"0 0 0"
+		"vec3d"	"max"	"3 7 3"
+	}
+
+	class "singularity" "#2"
+	{
+		"vec3d"		"origin"	"1.5 0 1.5"
+		"string"	"type"		"source"
+		"float"		"value"		"1"
+	}
+
+	class "singularity" "#3"
+	{
+		"vec3d"		"origin"	"1.5 4.5 1.5"
+		"string"	"type"		"sink"
+		"float"		"value"		"1"
+	}
+
+	class "homogen"	"#4"
+	{
+		"vec3d"		"norm"		"1 0 0"
+		"float"		"dist"		"-1.5"
+		"float"		"value"		"1"
+	}
+
+	class "homogen"	"#5"
+	{
+		"vec3d"		"norm"		"-1 0 0"
+		"float"		"dist"		"-4.5"
+		"float"		"value"		"1"
+	}
+
+	class "homogen"	"#6"
+	{
+		"vec3d"		"norm"		"0 0 1"
+		"float"		"dist"		"-1.5"
+		"float"		"value"		"1"
+	}
+
+	class "homogen"	"#7"	
+	{
+		"vec3d"		"norm"		"0 0 -1"
+		"float"		"dist"		"-4.5"
+		"float"		"value"		"0"
+	}
+
+	class "homogen"	"#8"
+	{
+		"vec3d"		"norm"		"0 1 0"
+		"float"		"dist"		"-2"
+		"float"		"value"		"1"
+	}	
+}

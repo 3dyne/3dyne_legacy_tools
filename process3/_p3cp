@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [[ ! ("$#" == 1) ]]; then
+    echo "need path to target directory"
+    exit 2
+fi
+
+DIR=$1
+
+if [ ! -d "$DIR" ]; then
+    echo "target directory does not exist"
+    mkdir -p $DIR
+fi
+
+FAKEDIR=$DIR/fake
+mkdir -p $FAKEDIR
+
+echo copying process output files to $1
+cp _tjfix_shape.hobj $FAKEDIR
+cp _glmesh_meshtile.bin $FAKEDIR
+
+cp _mapnode.hobj $FAKEDIR
+cp _plane.hobj $FAKEDIR
+cp _pvsout_visleaf.hobj $FAKEDIR
+cp _texdef.hobj $FAKEDIR
+cp _texture.hobj $FAKEDIR
+cp _blockmap_bspbrush.hobj $FAKEDIR
+
+cp _lightmap.hobj $FAKEDIR
+cp _lightmap.bin $FAKEDIR
+cp _light_source.hobj $FAKEDIR
+
+cp ats.class $DIR
+

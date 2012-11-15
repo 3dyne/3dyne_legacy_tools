@@ -1,0 +1,34 @@
+CC = i586-mingw32-gcc 
+COPY = cp
+RM = rm -f
+CFLAGS = -Wall -pipe -g 
+#CFLAGS = -Wall -pipe -O2 -finline-functions -fomit-frame-pointer -fexpensive-optimizations -mpentium -fschedule-insns2 -ffast-math -funroll-loops
+#CFLAGS = -Wall -pipe -pg -O2 -finline-functions -fexpensive-optimizations -mpentium
+#OFLAGS = 
+INCLUDES = -I. -I$(TDDIR)/gs_upi -I../shared -I/usr/local/i586-mingw32/include
+#DEFINES = -D__NO_VISLEAF
+DEFINES = -D_WIN32 -DWIN32 
+#LIBS =  -L/usr/X11/lib -lm -lGL -lMesaGLU -lglut -lX11 -lXmu -lXext -lXi  
+LIBS = -lopengl32 -lglu32 -lglut -lgdi32 -luser32 -lkernel32  
+#LIBS =  -lm -lglide2x -lX11 -lXmu -lXext -lXi -L$(HOME)/lib $(HOME)/lib/libglut.a $(HOME)/lib/libGLU.a $(HOME)/lib/libGL.a $(HOME)/lib/libGLX.a -L/usr/X11/lib   
+
+OBJ = r_initdata.o render3.o r_plane.o r_lightmap.o r_lplayout.o r_texture.o r_texdef.o r_misc.o r_field.o r_math.o r_frustum.o r_facesetup.o r_fstmap.o r_fstmapmt.o r_fsglva.o r_initgl.o r_fsglraster.o r_fsglrastermt.o r_fstexcrd.o r_hvis.o r_hvisclip.o r_volume.o r_model.o r_videoscape.o r_screendump.o r_csurface.o r_cssetup.o r_fsfx.o r_sprite.o g_blockmap.o g_bmlink.o g_bmobjects.o g_map.o g_trace.o g_ccmap3.o g_map3cache.o  a_main.o u_expand.o
+
+all: $(OBJ) render3
+
+render3: $(OBJ) Makefile
+	$(CC) $(CFLAGS) $(OFLAGS) -o $@ $(OBJ) ../csg/cbspbrush.win32.o $(LIBS) $(TDDIR)/gs_upi/gs_upi.a 
+	cp render3 $(HOME)/bin/render3.win32
+
+%.o: %.c Makefile
+	$(CC) $(INCLUDES) $(DEFINES) $(CFLAGS) -c $<
+
+depend: *.c *.h
+	makedepend $(INCLUDES) -p./ -f- *.c > depend
+
+clean:
+	$(RM) *.o *.a
+	$(RM) depend
+	$(RM) render3
+
+include depend

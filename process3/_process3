@@ -1,0 +1,191 @@
+#! /bin/bash
+
+set -u
+set -e
+#set -xv
+set -o errexit
+
+echo '50000' > .ID
+echo 'deleting old files ...'
+rm -f _*.hobj
+
+#
+# prepare
+#
+cp cpolys.hobj _cpoly.hobj
+cp csurfaces.hobj _csurface.hobj
+
+#
+# init process3
+#
+
+# HACK: w2p2 should also register the planes of the cpolys (-ipl)
+# output goes to _bspbrush.hobj
+w2p2 -ipl _cpoly.hobj
+echo
+
+# put all local/c4 brushes into a own class, they won't be bsp-ed
+
+class_split -ic _bspbrush.hobj -otc _bspbrush_c4.hobj -ofc _bspbrush.hobj -k "content" -v "4" -cmp eq
+echo
+
+# substruct/c5 dto.
+class_split -ic _bspbrush.hobj -otc _bspbrush_c5.hobj -ofc _bspbrush.hobj -k "content" -v "5" -cmp eq
+echo
+
+# HACK: all c6 brushes change to c4 brushes in due to leafflood ...
+class_alter -ic _bspbrush.hobj -oc _bspbrush.hobj -t "bspbrush" -k "content" -vf "6" -vt "4"
+echo
+
+csg2
+echo
+bsp2 -i _csgout_bspbrush.hobj
+echo
+portal2 -i _bspout_bspnode.hobj
+echo
+
+# gather solid+deco
+leafflood2 -p _portalout_portal.hobj -tci 16 -tc 12 -fc 0
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather1_bspbrush.hobj
+echo
+
+leafflood2 -p _portalout_portal.hobj -tc 16 -fc 12
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather2_bspbrush.hobj
+echo
+
+# brshmrg
+brshmrg -b1 _gather1_bspbrush.hobj -b2 _gather2_bspbrush.hobj
+echo
+brshclassify 
+echo
+
+echo
+echo END OF PASS 1 
+echo
+
+bsp2 -i _brshclassify_bspbrush.hobj
+echo
+portal2 -i _bspout_bspnode.hobj
+echo
+
+leafflood2 -p _portalout_portal.hobj -tci 16 -tc 12 -fc 0
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather1_bspbrush.hobj
+echo
+
+leafflood2 -p _portalout_portal.hobj -tc 16 -fc 12
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather2_bspbrush.hobj
+echo
+
+# brshmrg
+brshmrg -b1 _gather1_bspbrush.hobj -b2 _gather2_bspbrush.hobj
+echo
+brshclassify
+echo
+
+echo
+echo END OF PASS 2
+echo
+
+bsp2 -i _brshclassify_bspbrush.hobj
+echo
+stripbsp
+echo
+
+portal2 -i _stripbsp_bspnode.hobj
+echo
+leafflood2 -p _portalout_portal.hobj
+echo
+visleaf2 -p _portalout_portal.hobj
+echo
+pvs_through --trivial-only
+#pvs_through
+echo
+
+mapnode2 -n _visleaf_bspnode.hobj -v _pvsout_visleaf.hobj
+echo
+
+# vis-solid / solid
+portal2 -i _bspout_bspnode.hobj
+echo
+leafflood2 -p _portalout_portal.hobj -tc 24 -fc 4
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather1_bspbrush.hobj
+echo
+# deco
+leafflood2 -p _portalout_portal.hobj -tci 24 -tc 4
+echo
+gather2 -at ats.hobj -p _portalout_portal.hobj -o _gather2_bspbrush.hobj
+echo
+brshmrg -b1 _gather1_bspbrush.hobj -b2 _gather2_bspbrush.hobj
+echo
+surfmerge -i _brshmrg_bspbrush.hobj
+echo
+
+blockmap -i _surfmerge_bspbrush.hobj -o _blockmap_bspbrush.hobj -td _texdef.hobj -tx _texture.hobj -pl _plane.hobj
+
+echo
+
+#
+# prepare shapes
+#
+
+# extract polygon from bspbrush class
+epoly -i _surfmerge_bspbrush.hobj -o _epoly_poly.hobj
+echo $?
+
+polymerge -i _epoly_poly.hobj -o _polymerge_poly.hobj -pl _plane.hobj
+echo $?
+
+# build shapes from local/c4 brushes 
+csg2 -i _bspbrush_c4.hobj -o _bspbrush_c4.hobj --no-csg --save-with-polygons
+echo $?
+epoly -i _bspbrush_c4.hobj -o _epoly_poly_c4.hobj
+echo $?
+
+sface2shape -i _epoly_poly_c4.hobj -o _shape_sface_c4.hobj -td _texdef.hobj -tx _texture.hobj -tm `cdbget -s -k light/texture`
+echo $?
+
+# build meshtile shapes from c5 brushes 
+csg2 -i _bspbrush_c5.hobj -o _bspbrush_c5.hobj --no-csg --save-with-polygons
+echo $?
+
+meshtile1 -i _bspbrush_c5.hobj -o _shape_meshtile.hobj -obin _glmesh_meshtile.bin -td _texdef.hobj -tx _texture.hobj -path `cdbget -s -k project/base` -pl _plane.hobj -tm `cdbget -s -k light/texture`	
+echo $?
+
+# build initial shapes
+sface2shape -i _polymerge_poly.hobj -o _shape_sface.hobj -td _texdef.hobj -tx _texture.hobj -tm `cdbget -s -k light/texture`
+echo $?
+
+cface2shape -i _cpoly.hobj -o _shape_cface.hobj -pl _plane.hobj -tm `cdbget -s -k light/texture`
+echo
+
+csurf2shape -i _csurface.hobj -o _shape_csurf.hobj -tm `cdbget -s -k light/texture`
+echo
+
+# merge shapes into one root shape class
+class_new -o _shape.hobj -type "shapes" -name "shapes0"
+echo
+class_copy -odest _shape.hobj -idest _shape.hobj -isrc _shape_sface.hobj -dest "shapes0" -src "sfaces0"
+echo
+class_copy -odest _shape.hobj -idest _shape.hobj -isrc _shape_sface_c4.hobj -dest "shapes0" -src "sfaces0"
+echo
+class_copy -odest _shape.hobj -idest _shape.hobj -isrc _shape_cface.hobj -dest "shapes0" -src "cfaces0"
+echo
+class_copy -odest _shape.hobj -idest _shape.hobj -isrc _shape_csurf.hobj -dest "shapes0" -src "csurfs0"
+echo
+class_copy -odest _shape.hobj -idest _shape.hobj -isrc _shape_meshtile.hobj -dest "shapes0" -src "meshtiles0"
+echo
+
+shapelight -n _bspout_bspnode.hobj -pl _plane.hobj -ati ats.hobj -m `cdbget -s -k light/material` -i _shape.hobj -o _light_shape.hobj
+echo
+shapetjfix -i _light_shape.hobj -o _tjfix_shape.hobj
+echo
+
+echo
+echo END OF PASS 3
+echo
+

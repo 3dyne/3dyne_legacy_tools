@@ -1,0 +1,61 @@
+#! /bin/bash
+cd class
+make clean
+make
+cd ../
+cd csg
+make clean
+make 
+cd ../
+cd bsp
+make clean
+make
+cd ../
+cd w2p
+make clean
+make
+cd ../
+cd portal
+make clean
+make
+cd ../
+cd fface
+make clean
+make
+cd ../
+cd pvs
+make clean
+make
+cd ../
+cd pvs_through
+make clean
+make
+cd ../
+cd light
+make clean
+make 
+cd ../
+cd light/poly
+make clean
+make 
+cd ../../
+cd render
+make clean
+make 
+cd ../
+cd mapnode
+make clean
+make 
+cd ../
+cd shape
+make clean
+make 
+cd ../
+cd meshtiles
+make clean
+make 
+cd ../
+cd tjfix/shape
+make clean
+make 
+cd ../

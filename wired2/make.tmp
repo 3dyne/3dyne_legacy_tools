@@ -1,0 +1,8 @@
+CC	=	g++
+CFLAGS	=	-Wall -W -g
+INCPATH	=	-I$(QTDIR)/include -I$(TDDIR)/gs_upi -I$(TDDIR)/gs_gpi -I/opt/kde/include
+LINK	=	g++
+LFLAGS	=	
+LIBS	=	-L$(QTDIR)/lib -lqt -L/usr/X11R6/lib -lX11 $(TDDIR)/gs_upi/gs_upi.a $(TDDIR)/gs_gpi/gs_gpi.a -L/opt/kde/lib -lkdecore -lXext
+MOC	=	moc
+

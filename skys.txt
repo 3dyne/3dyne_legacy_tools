@@ -1,0 +1,7 @@
+cia
+0. front  		flip		ft
+1. right  		flip		rt
+2. back  		flip		bk
+3. left  		flip		lt
+4. top / up 		flip 90cw	up
+5. bottom / down	flip 90cw 	dn

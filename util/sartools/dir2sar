@@ -1,0 +1,2 @@
+#!/bin/bash
+ls -RLF | dirparse | sort | o_sar $1 $2 $3 $4

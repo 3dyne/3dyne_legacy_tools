@@ -1,0 +1,212 @@
+# supported targets:
+CC = i586-mingw32-gcc
+AR = i586-mingw32-ar
+RANLIB = i586-mingw32-ranlib 
+COPY = cp
+RM = rm -f
+CFLAGS = -Wall -pipe -g
+#CFLAGS = -Wall -pipe -O2 -finline-functions -fomit-frame-pointer -fexpensive-optimizations -mpentium -fschedule-insns2
+#CFLAGS = -Wall -pipe -pg -O2 -finline-functions -fexpensive-optimizations -mpentium
+INCLUDES = -I.
+DEFINES = -D linux_i386
+
+OBJ = arr.o tga.o pal.o tdb.o cmdpars.o cdb_service.o lib_pfiles.o wire.o \
+	lib_math.o lib_poly.o lib_poly2d.o lib_error.o lib_unique.o lib_token.o \
+	lib_arche.o lib_bezier.o lib_endian.o lib_packed.o lib_hobj.o \
+	lib_mprof.o
+
+all: $(OBJ) gs_upi.a 
+
+depend: *.c *.h
+	makedepend $(INCLUDES) -p. -f- *.c > depend
+
+clean:
+	$(RM) *.o *.a
+	$(RM) depend
+
+%.o: %.c %.h
+	$(CC) $(INCLUDES) $(DEFINES) $(CFLAGS) -c $<
+
+gs_upi.a: $(OBJ)
+	$(RM) $@
+	$(AR) -r $@ $(OBJ)
+	$(RANLIB) $@
+	ln -sf gs_upi.a libgs_upi.a
+
+include depend
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

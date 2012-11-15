@@ -1,0 +1,10 @@
+mcb/e1m1:
+
+load and save with wired2 to
+ convert old ats file and 
+ create cpolys.class
+ create csurfaces.class
+add sector archetype
+fix player_pos archetype
+add wall/wall5_1 to arch00
+ mogrify -type TrueColor wall5_1.tga

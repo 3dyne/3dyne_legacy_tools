@@ -1,0 +1,21 @@
+{	{ "STRING" "wire/save_dir" "/home/mcb/levels/" }
+	{ "STRING" "process3/texture_path" "/mnt/gs/master/textures/" }
+	{ "STRING" "wired/texture_path" "/home/mcb/devel/devel_3dyne_retro/arch00/textures/" }
+	{ "STRING" "wired/default_pal" "/home/mcb/devel/devel_3dyne_retro/gs_retro/quake21.pal" }
+	{ "STRING" "wired/wire/load_dir" "/home/mcb/devel/devel_3dyne_retro/tmp" }
+	{ "STRING" "wired/wire/save_dir" "/home/mcb/devel/devel_3dyne_retro/tmp/mcb1.d" }
+	{ "STRING" "wired/main/panratio" "0.587261" }
+	{ "STRING" "light/material" "/home/mcb/devel/devel_3dyne_retro/arch00/textures/material.hobj" }
+	{ "STRING" "light/texture" "/home/mcb/devel/devel_3dyne_retro/arch00/textures/texture_material.hobj" }
+	{ "STRING" "project/base" "/home/mcb/devel/devel_3dyne_retro/arch00" }
+	{ "STRING" "tdb/tdb_name" "/mnt/gs/agony1/arch00/textures/textures.tdb" }
+	{ "STRING" "tdb/art_path" "/home/mcb/art/" }
+	{ "STRING" "tdb/creator" "mcb" }
+	{ "STRING" "tdb/texture_path" "/mnt/gs/agony1/arch00/textures/" }
+	{ "STRING" "misc/default_pal" "/home/mcb/devel/devel_3dyne_retro/gs_retro/quake21.pal" }
+	{ "INT" "wired/main/xpos" "1680" }
+	{ "INT" "wired/main/ypos" "0" }
+	{ "INT" "wired/main/width" "1680" }
+	{ "INT" "wired/main/height" "1031" }
+	{ "INT" "wired/conf" "1" }
+}

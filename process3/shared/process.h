@@ -1,0 +1,521 @@
+/* 
+ * 3dyne Legacy Tools GPL Source Code
+ * 
+ * Copyright (C) 1996-2012 Matthias C. Berger & Simon Berger.
+ * 
+ * This file is part of the 3dyne Legacy Tools GPL Source Code ("3dyne Legacy
+ * Tools Source Code").
+ *   
+ * 3dyne Legacy Tools Source Code is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ * 
+ * 3dyne Legacy Tools Source Code is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ * Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * 3dyne Legacy Tools Source Code.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * In addition, the 3dyne Legacy Tools Source Code is also subject to certain
+ * additional terms. You should have received a copy of these additional terms
+ * immediately following the terms and conditions of the GNU General Public
+ * License which accompanied the 3dyne Legacy Tools Source Code.
+ * 
+ * Contributors:
+ *     Matthias C. Berger (mcb77@gmx.de) - initial API and implementation
+ *     Simon Berger (simberger@gmail.com) - initial API and implementation
+ */ 
+
+
+
+// process.h
+
+#ifndef __process
+#define __process
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include "cmdpars.h"
+#include "wire.h"
+#include "lib_token.h"
+#include "lib_error.h"
+#include "lib_math.h"
+#include "lib_poly.h"
+#include "lib_unique.h"
+
+#include "gl_client.h"
+
+/*
+  ====================
+  plane_t
+
+*/
+#define		PLANE_TYPE_NONE		( -1 )
+#define		PLANE_X			( 0 )
+#define		PLANE_Y			( 1 )
+#define		PLANE_Z			( 2 )
+#define		PLANE_ANYX		( 3 )
+#define		PLANE_ANYY		( 4 )
+#define		PLANE_ANYZ		( 5 )
+
+#define		PLANE_NORM_EPSILON	( 0.00001 )
+#define		PLANE_DIST_EPSILON	( 0.01 )
+
+typedef struct plane_s {
+	vec3d_t		norm;
+	fp_t		dist;
+	int		type;
+} plane_t;
+
+
+/*
+  ====================
+  face_t
+
+  bsp/portal faces
+*/
+typedef struct face_s {
+	int		sector;		// face into this sector
+	
+	int		firstfacevertex;	// valid after 
+	int		facevertexnum;
+
+	struct face_s	*next;
+	polygon_t		*p;	
+} face_t;
+
+/*
+  ====================
+  wtexture_t
+
+  wired texture name
+*/
+#define		TEXTURE_IDENT	( 32 )
+typedef struct wtexture_t {
+	char		ident[TEXTURE_IDENT];
+} wtexture_t;
+
+/*
+  ====================
+  wtexdef_t
+
+  wired texdef from wface
+*/
+#define		PROJECT_X	( 0 )	// ! like PLANE_X ... !
+#define		PROJECT_Y	( 1 )
+#define		PROJECT_Z	( 2 )
+#define		PROJECT_VEC	( 4 )
+#define		PROJECT_SHIFT	( 8 )
+typedef struct wtexdef_s {
+	int		texture;
+	unsigned int	flags;
+	vec2d_t		vec[2];
+	vec2d_t		shift;
+} wtexdef_t;
+
+/*
+  ====================
+  wface_t
+
+  wired faces 
+*/
+typedef struct wface_s {
+	unsigned int	contents;	// surface attributs
+	unsigned int	plane;	// plane num
+	unsigned int	texdef; // 
+
+	struct face_s	*faces;		// list of faces on plane made from portals
+	// valid after Face_MakeWbrushFaces
+
+	polygon_t	*p;
+	
+	struct wface_s	*next;
+} wface_t;
+
+
+/*
+  ====================
+  wbrush_t
+
+  wired brushes
+*/
+// brushes
+#define BRUSH_CONTENTS_SOLID	( 16 )
+#define BRUSH_CONTENTS_LIQUID	( 8 )
+#define BRUSH_CONTENTS_DECO	( 6 )
+#define BRUSH_CONTENTS_HINT	( 4 )
+
+// brush process internal
+#define BRUSH_CONTENTS_EMPTY	( 0 )	// for empty leafs ( got no brush at all )
+
+// surfaces
+#define SURFACE_CONTENTS_OPEN		( 1 )	// closed portal
+#define SURFACE_CONTENTS_CLOSE		( 2 )	// open portal
+#define SURFACE_CONTENTS_TEXTURE	( 4 )	// textured portal
+#define SURFACE_CONTENTS_WINDOW		( 8 )	// both sides are textured
+#define SURFACE_CONTENTS_SF_CLOSE	( 16 )	// sector flood closed portal
+
+// surface process internal
+#define SURFACE_CONTENTS_INSIDE		( 0x10000 ) // portal between leafs with equal contents
+#define SURFACE_CONTENTS_VIS_FLOOD	( 0x20000 ) // portal was reached by vis flood
+#define SURFACE_CONTENTS_VISIBLE	( 0x20000 ) // fix me !
+// portal goes to a node and not a leaf
+// this happen if a sub tree could not be
+// portalized ...  
+#define SURFACE_CONTENTS_BROKEN		( 0x40000 ) 
+
+// #define CONTENTS_EMPTY	( 0 ) // only empty leafs
+// #define NODE_CONTENTS_EMPTY	( 0 )
+// #define NODE_CONTENTS_BRUSH	( 0 )
+
+typedef struct wbrush_s {
+	unique_t	id;
+	
+	unsigned int	contents;	// brush attributs
+
+	int		facenum;	// for initial bspbrush generation ( wfaces ! )
+
+	int		visfacenum;	// number of frag faces in wfaces after Face_MakeBrushFaces
+
+	struct wbrush_s	*next;
+	struct wface_s	*faces;
+} wbrush_t;
+
+
+
+
+/*
+  ====================
+  surface_t
+
+  csg/bsp surfaces
+*/
+//#define		TEXDEF_SPLIT	( -1 )
+
+typedef struct surface_s {
+	int		plane;
+//	int		texdef;		// TEXDEF_SPLIT special texdef for 
+					// surfaces generated by a split, set by AddSurfaceToBrush
+	bool_t		bysplit;
+	bool_t		onnode;		// set by CheckBrushWithPlane2 if surface is on plane to check
+					// or by AddSurfaceToBrush for the new surface
+					// both needed by CSG_SplitBrush, it's only needed for BSP
+	unsigned int	contents;
+	polygon_t	*p;
+} surface_t;
+
+
+/*
+  ====================
+  bspbrush_t
+
+  csg/bsp brushes
+*/
+typedef struct bspbrush_s {
+	unsigned int	contents;
+	int		surfacenum;
+
+	struct wbrush_s	*original;	// bspbrush is part of this original wbrush
+
+	// BSP_SplitBrushList:
+	struct bspbrush_s	*partof;	// brush is a part of that
+				// walk up till partof == NULL, that's the original csgbrush
+
+	vec3d_t		min, max;		// bounding box
+
+	struct bspbrush_s	*next;
+	
+	struct surface_s	surfaces[6]; // variable
+} bspbrush_t;
+
+
+/*
+  ====================
+  bspnode_t
+
+  bsp node/leaf
+*/
+#define		NODE_PLANE_LEAF_EMPTY		( -1 )
+#define		NODE_PLANE_LEAF_BRUSH		( -2 )
+#define		NODE_PLANE_LEAF_OUTSIDE		( -3 )
+
+// obsolete
+#define		NODE_CONTENTS_EMPTY	( 1 )
+#define		NODE_CONTENTS_SOLID	( 2 )
+#define		NODE_CONTENTS_OUTSIDE	( 4 )
+
+typedef struct bspnode_s {
+	int		index;	// generated by Index_BSP for disk writing ( init = -1 ! )
+
+
+	int		plane;	// leaf: NODE_PLANE_LEAF
+	unsigned int		contents; // from brush if NODE_PLANE_LEAF_BRUSH
+	bspbrush_t		*volume;
+
+	int		cluster;	// only for studies
+
+	// as leaf
+	bool_t			flood;	// used by every portal flood to mark still
+					// visited leafs
+
+	int			sector; // leaf is part of this sector (init = -1). valid after Sector_BSPTree 
+
+	// as solid leaf
+	bspbrush_t		*solid;	// this brush is the solid leaf
+
+	struct portal_s		*portals;
+	struct bspnode_s	*child[2];
+} bspnode_t;
+
+/*
+  ====================
+  bsptree_t
+
+  bsp/portal tree
+*/
+typedef struct bsptree_t {
+	vec3d_t		min, max;	// world bb
+
+	bspnode_t	*outnode;	// for portalize/flood
+	bspnode_t	*headnode;
+} bsptree_t;
+
+/*
+  ====================
+  portal_t
+
+  portal/flood
+*/
+#define PORTAL_CONTENTS_OPEN		( 1 ) 
+#define PORTAL_CONTENTS_CLOSE		( 2 )
+#define PORTAL_CONTENTS_2SOLID		( 4 )	// solid-solid portal
+#define PORTAL_CONTENTS_2EMPTY		( 8 )	// empty-empty portal
+#define PORTAL_CONTENTS_VISIBLE		( 16 )	// closed portal reached by visflood
+
+typedef struct portal_s {
+	int		index;	// generated by Index_BSP for disk writing ( init = -1 ! )
+
+	plane_t			plane;	// real plane
+	unsigned int			contents;
+
+	// if the portal is the transition between different strong contents
+	// this node is the stronger of nodes[]
+	int			stronger;	// after MakePortalContent
+	
+	polygon_t		*p;
+
+	struct bspnode_s		*nodes[2];
+	struct portal_s		*next[2];
+} portal_t;
+
+
+/*
+  ====================
+  sector_t
+
+*/
+typedef struct {
+	vec3d_t		origin;
+	vec3d_t		ambient;
+	vec3d_t		fog;
+	float		fog_dense;
+} sector_t;
+
+//
+// archetypes: change also wired2/archetype.h
+//
+
+#define AT_ID_SIZE		( 8 )
+#define AT_KEY_SIZE		( 32 )
+#define AT_VALUE_SIZE		( 32 )
+
+#define AT_MAX_PAIRS		( 16 )
+
+typedef struct wkvpair_s {
+	struct wkvpair_s	*next;
+	char		type[AT_ID_SIZE];
+	char		key[AT_KEY_SIZE];
+	char		value[AT_VALUE_SIZE];
+} wkvpair_t;
+
+typedef struct warche_s {
+	unique_t		id;
+	struct warche_s		*next;
+	struct wkvpair_s	*pairs;	// variable
+} warche_t;
+
+// =============================================================================
+
+// that's much better someday
+#define		MAX_PPLANES	( 8192 )
+#define		MAX_WTEXTURES	( 1024 )
+#define		MAX_WTEXDEFS	( 2048 )
+#define		MAX_PSECTORS	( 128 )
+#if 0
+typedef struct {
+
+	int		planenum;
+	plane_t		planes[MAX_PPLANES];
+	int		planecheck[MAX_PPLANES];
+
+	wbrush_t	*wbrushes;
+	warche_t	*warches;
+
+	bspbrush_t	*csgbrushes;
+	
+	bsptree_t	*tree;
+
+//	int		sectornum;
+//	sector_t	sectors[MAX_PSECTORS];
+} pmodel_t;
+#endif
+// =============================================================================
+
+//
+// process.c
+// ========================================
+
+extern bool_t	enable_gls;
+ 
+extern FILE		*p_handle;
+extern char	*p_dir;
+
+// valid after LoadSBrushes
+extern int	p_planenum;
+extern plane_t	p_planes[MAX_PPLANES];
+extern int	p_planecheck[MAX_PPLANES];
+
+extern int			p_wtexturenum;
+extern wtexture_t	p_wtextures[MAX_WTEXTURES];
+
+extern int			p_wtexdefnum;
+extern wtexdef_t	p_wtexdefs[MAX_WTEXDEFS];
+
+// valid after LoadSBrushes
+extern wbrush_t	*p_wbrushes;
+
+// valid after Sector_BSPTree
+extern int	p_sectornum;
+extern sector_t	p_sectors[MAX_PSECTORS];
+
+wface_t*	NewWFace( void );
+void		FreeWFace( wface_t * ); 
+wbrush_t*	NewWBrush( void );
+void		FreeWBrush( wbrush_t * );
+
+extern warche_t	*p_warches;
+
+wkvpair_t*	NewWKvpair( void );
+void		FreeWKvpair( wkvpair_t * );
+
+warche_t*	NewWArche( void );
+void		FreeWArche( warche_t * );
+wkvpair_t*	FindPair( warche_t *arche, char *key );
+void		CastPairToVec3d( vec3d_t v, wkvpair_t *pair );
+void		CastPairToFloat( float *f, wkvpair_t *pair );
+
+#define		MAX_SURFACES_PER_BRUSH	( 64 )
+bspbrush_t*	NewBrush( int surfacenum );
+void		FreeBrush( bspbrush_t * );
+face_t*		NewFace( void );
+void		FreeFace( face_t * );
+
+bspnode_t*	NewNode( void );
+void		FreeNode( bspnode_t *node );
+
+bsptree_t*	NewTree( void );
+void		FreeTree( bsptree_t *tree );
+
+portal_t*	NewPortal( void );
+void		FreePortal( portal_t * );
+
+
+// 
+// loadproject.c
+// ========================================
+
+#define		WIRETYPE_VERSION	( "2" )
+#define		ARCHETYPE_VERSION	( "1" )
+unsigned int FindPlane( vec3d_t norm, fp_t dist );
+void LoadProject( );
+
+//
+// csg.c
+// ========================================
+
+// for CheckBrushWithPlane
+#define BRUSH_BACK_ON	( 0 )
+#define BRUSH_FRONT_ON	( 1 )
+#define BRUSH_BACK	( 2 )
+#define BRUSH_FRONT	( 3 )
+#define BRUSH_SPLIT	( 4 )
+
+fp_t	CalcBrushVolume( bspbrush_t *in );
+void	CSG_SplitBrush( bspbrush_t *in, int plane, bspbrush_t **front, bspbrush_t **back, bool_t bsp_enable );
+int	CheckBrushWithPlane2( bspbrush_t *in, vec3d_t norm, fp_t dist, bool_t bsp_enable );
+void	CalcBrushBounds( bspbrush_t *bb );
+int BrushListLength( bspbrush_t *list );
+bspbrush_t* CopyBrush( bspbrush_t *in );
+void	CreateBrushPolygons( bspbrush_t *b );
+bspbrush_t* CSG_WBrushes( wbrush_t *head );
+void CalcBrushListBounds( bspbrush_t *head, vec3d_t min, vec3d_t max );
+void Draw_Brush( bspbrush_t *in );
+void Draw_BrushList( bspbrush_t *head );
+
+//
+// bsp.c
+// ========================================
+
+bsptree_t* BSP_Brushes( bspbrush_t *head );
+bspnode_t* FindLeafForPoint( bspnode_t *headnode, vec3d_t p );
+
+//
+// portal.c
+// ========================================
+
+void Portal_BSPTree( bsptree_t *tree );
+
+//
+// sector.c
+// ========================================
+
+void Sector_BSPTree( bsptree_t *tree );
+
+//
+// face.c
+// ========================================
+
+#define		LIGHT_FACE_SIZE		( 256.0 - 16.0 )
+
+void Face_MakeBrushFaces( bsptree_t *tree );
+void Face_LightChop( void );
+void Face_MakeWBrushFaceVertices( bsptree_t *tree );
+void Write_WBrushFaces( void );
+void Write_WTextures( void );
+void Write_WTexdefs( void );
+
+void Write_WFaceTextures( void );
+
+//
+// index.c
+// ========================================
+
+bool_t	NoFrac( fp_t b );
+void Write_fp( fp_t b );
+void Write_Vec3d( vec3d_t v );
+void Write_Plane( plane_t *pl );
+void Write_Polygon( polygon_t *p, bool_t flip );
+
+void Index_BSPTree( bsptree_t *tree );
+
+// write vis portal file for pvs ( call after VisFlood )
+void Index_SectorLeafs( bsptree_t *tree );
+void Write_VisLeafs( bsptree_t *tree );
+
+#endif

@@ -1,0 +1,76 @@
+#! /bin/bash
+
+echo '50000' > .ID
+echo 'deleting old files ...'
+rm _*.class
+
+w2p2
+csg2
+bsp2 -i _csgout_bspbrush.class
+portal2 -i _bspout_bspnode.class
+
+# gather solid+deco
+mkpc
+leafflood -tci 16 -tc 14
+gather -o _gather1_bspbrush.class
+
+# gather vis-solid
+mkpc --vis-solid-only
+leafflood -fci 14 -tc 16
+gather -o _gather2_bspbrush.class
+
+# brshmrg
+brshmrg -b1 _gather1_bspbrush.class -b2 _gather2_bspbrush.class
+brshclassify 
+
+echo
+echo END OF PASS 1 
+echo
+
+bsp2 -i _brshclassify_bspbrush.class
+portal2 -i _bspout_bspnode.class
+
+mkpc
+leafflood -tci 16 -tc 14
+gather -o _gather1_bspbrush.class
+
+# gather vis-solid
+mkpc --vis-solid-only
+leafflood -fci 14 -tc 16
+gather -o _gather2_bspbrush.class
+
+# brshmrg
+brshmrg -b1 _gather1_bspbrush.class -b2 _gather2_bspbrush.class
+brshclassify
+
+echo
+echo END OF PASS 2
+echo
+
+bsp2 -i _brshclassify_bspbrush.class
+stripbsp
+
+portal2 -i _stripbsp_bspnode.class
+mkpc
+leafflood
+visleaf
+#pvs --trivial-only
+pvs
+
+mapnode2 -n _visleaf_bspnode.class -v _pvsout_visleaf.class
+
+portal2 -i _bspout_bspnode.class
+mkpc
+leafflood
+gather
+surfmerge
+
+#light -b _surfmerge_bspbrush.class --no-facelight
+light -b _surfmerge_bspbrush.class
+
+fface2 -i _light_bspbrush.class --no-tjfix
+
+echo
+echo END OF PASS 3
+echo
+

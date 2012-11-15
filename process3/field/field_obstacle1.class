@@ -1,0 +1,23 @@
+class "field" "field_obstacle1"
+{
+	class "fieldpoints"	"#1"
+	{
+		"vec3d"	"min"	"0 0 0"
+		"vec3d" "max"	"3 3 3"
+	}
+
+	class "singularity" "#2"
+	{
+		"vec3d"		"origin"	"1.5 1.5 1.5"
+		"string"	"type"		"source"
+		"float"		"value"		"1"		
+	}
+
+#	class "homogen" "#4"
+#	{
+#		"vec3d"		"norm"		"1 0 0"
+#		"float"		"dist"		"0"
+#		"float"		"value"		"1"
+#	}
+	
+}

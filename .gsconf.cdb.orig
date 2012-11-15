@@ -1,0 +1,21 @@
+{	{ "STRING" "wire/save_dir" "/home/mcb/levels/" }
+	{ "STRING" "process3/texture_path" "/mnt/gs/master/textures/" }
+	{ "STRING" "wired/texture_path" "/mnt/gs/master/textures/" }
+	{ "STRING" "wired/default_pal" "/home/mcb/program/c/3d/old_beta/quake21.pal" }
+	{ "STRING" "wired/wire/load_dir" "/usr/local/tmp/process3" }
+	{ "STRING" "wired/wire/save_dir" "/home/mcb/levels/test" }
+	{ "STRING" "wired/main/panratio" "0.587261" }
+	{ "STRING" "light/material" "/mnt/project/dd1/arch00/textures/material.class" }
+	{ "STRING" "light/texture" "/mnt/project/dd1/arch00/textures/texture_material.class" }
+	{ "STRING" "project/base" "/mnt/project/dd1/arch00" }
+	{ "STRING" "tdb/tdb_name" "/mnt/gs/agony1/arch00/textures/textures.tdb" }
+	{ "STRING" "tdb/art_path" "/home/mcb/art/" }
+	{ "STRING" "tdb/creator" "mcb" }
+	{ "STRING" "tdb/texture_path" "/mnt/gs/agony1/arch00/textures/" }
+	{ "STRING" "misc/default_pal" "/home/mcb/quake21.pal" }
+	{ "INT" "wired/main/xpos" "0" }
+	{ "INT" "wired/main/ypos" "106" }
+	{ "INT" "wired/main/width" "1270" }
+	{ "INT" "wired/main/height" "888" }
+	{ "INT" "wired/conf" "1" }
+}

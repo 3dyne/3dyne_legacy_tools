@@ -1,0 +1,18 @@
+# archetype templates
+
+{
+	"class"		"light"
+	"origin"	"0 0 0"
+	"value"		"100"
+	"color"		"1 1 1"
+}
+
+{
+	"class"		"spotlight"
+	"origin"	"0 0 0"
+	"value"		"100"
+	"color"		"1 1 1"
+	"falloff"	"10"
+	"angle"		"45"
+	"spotvec"	"0 -1 0"
+}
